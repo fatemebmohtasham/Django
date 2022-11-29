@@ -1,12 +1,12 @@
 from django.shortcuts import render,redirect
 from . models import Product,Customer,Order,User
-from . forms import OrderForm,UserForm,CustomerForm,ProductForm,OrderUser
+from . forms import OrderForm,UserForm,CustomerForm,ProductForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models  import Group
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
-from.decorator import admin_only,unauthenticated_user,allowed_user
+from.decorator import admin_only,allowed_user
 
 
 
@@ -24,7 +24,7 @@ def login_page(request):
       login(request,user) 
       return redirect('dashboard')
     else:
-      messages.error(request,'email or password is not correct')       
+      messages.error(request,'username or password is not correct')       
   return render(request,'account/login.html')
 
 def user_register(request):
@@ -43,6 +43,7 @@ def user_register(request):
 				phone=user.phone,
 				email=user.email,
 			)
+
 			messages.success(request,'account was created')
 			return redirect('login')
 	context={'forms':form}
@@ -54,28 +55,6 @@ def user_register(request):
 def logout_page(request):
   logout(request)
   return redirect('dashboard')
-
-
-def profile(request,pk):
-	customer=Customer.objects.get(id=pk)
-	orders=customer.order_set.exclude(product__isnull=True)
-	total_orders=orders.count()
-	delivere=Order.objects.filter(status='Delivered').count()
-	pending=Order.objects.filter(status='Pending').count()
-	context={'customers': customer,'total_orders':total_orders,
-	'delivered':delivere,'pending':pending,'orders':orders}
-	return render(request,'account/profile.html',context)
-
-
-def create_order_user(request):
-	form=OrderUser()
-	if request.method == 'POST':
-		form=OrderUser(request.POST)
-		if form.is_valid():
-			form.save()
-			return redirect ('profile')
-	context={'forms':form}
-	return render (request,'account/order_user.html',context)
 
 
 def dashboard(request):
@@ -90,14 +69,15 @@ def dashboard(request):
 	'pending':pending}
 	return render (request,'account/dashboard.html',context)
 
-#@allowed_user(allowed_roles=['admin'])
-#@admin_only
+@allowed_user(allowed_roles=['admin'])
+@admin_only
 def product(request):
 	product=Product.objects.all()
 	context={'products':product}
 	return render (request,'account/products.html',context)
 
-
+@allowed_user(allowed_roles=['admin'])
+@admin_only
 def create_product(request):
 	form=ProductForm
 	if request.method == 'POST':
@@ -108,7 +88,8 @@ def create_product(request):
 	context={'forms':form,}
 	return render (request,'account/product_form.html',context)
 
-
+@allowed_user(allowed_roles=['admin'])
+@admin_only
 def delete_product(request,pk):
 	product=Product.objects.get(id=pk)
 	if request.method == 'POST':
@@ -128,17 +109,6 @@ def customer(request,pk):
  total_orders=order2.count()
  context={'customer':customer,'orders':order,'total_orders':total_orders,'orders2':order2}
  return render (request,'account/customer.html',context)
-
-
-def create_customer(request):
-	form=CustomerForm()
-	if request.method == 'POST':
-		form=CustomerForm(request.POST)
-		if form.is_valid():
-			form.save()
-			return redirect ('dashboard')
-	context={'forms':form,}
-	return render (request,'account/customer_form.html',context)
 
 
 def update_customer(request,pk):
@@ -161,13 +131,14 @@ def delete_customer(request,pk):
 	return render (request,'account/delete_item.html',{'item':customer})
 
 
-def create_order(request):
-	form=OrderForm()
+def create_order(request,pk):
+	customer=Customer.objects.get(id=pk)
+	form=OrderForm(initial={'customer':customer})
 	if request.method == 'POST':
 		form=OrderForm(request.POST)
 		if form.is_valid():
 			form.save()
-			return redirect ('dashboard')
+			return redirect ('customer',pk=customer.id)
 	context={'forms':form}
 	return render (request,'account/order_form.html',context)
 

@@ -9,11 +9,6 @@ class OrderForm(ModelForm):
 		fields = '__all__'
 
 
-class OrderUser(ModelForm):
-	class Meta:
-		model = Order
-		fields = ['product','status']
-
 class CustomerForm(ModelForm):
 	class Meta:
 		model = Customer
