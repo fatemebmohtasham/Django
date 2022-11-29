@@ -1,0 +1,33 @@
+{% extends 'main.html' %}
+{% block content %}
+{% include 'navabar.html' %}
+{% include 'account/status_row.html' %}
+<div class="row">
+	<div class="col-md">
+		<div class="card card-body">
+			<h5>Customer: {{customers.user}}</h5>
+			<hr>
+			<a class="btn btn-primary  btn-sm btn-block" href="{% url 'create_order_user' %}">Create Order</a>
+			<table class="table table-sm">
+				<tr>
+					<th>Product</th>
+					<th>Category</th>
+					<th>Date Orderd</th>
+					<th>Status</th>
+				</tr>
+				{% for order in orders %}
+					<tr>
+						<td>{{order.product}}</td>
+						<td>{{order.product.category}}</td>
+						<td>{{order.date_created}}</td>
+						<td>{{order.status}}</td>
+					</tr>
+				{% endfor %}
+			</table>
+		</div>
+	</div>
+</div>
+	
+
+
+{% endblock content %}
