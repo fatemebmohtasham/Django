@@ -1,8 +1,8 @@
 from django.shortcuts import render,redirect
-from . models import Product,Customer,Order
+from . models import Product,Customer,Order,User
 from . forms import OrderForm,UserForm,CustomerForm,ProductForm,OrderUser
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models  import User ,Group
+from django.contrib.auth.models  import Group
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
@@ -39,6 +39,9 @@ def user_register(request):
 			user.groups.add(group)
 			Customer.objects.create(
 				user=user,
+				name=user.name,
+				phone=user.phone,
+				email=user.email,
 			)
 			messages.success(request,'account was created')
 			return redirect('login')
@@ -87,15 +90,14 @@ def dashboard(request):
 	'pending':pending}
 	return render (request,'account/dashboard.html',context)
 
-@allowed_user(allowed_roles=['admin'])
-@admin_only
+#@allowed_user(allowed_roles=['admin'])
+#@admin_only
 def product(request):
 	product=Product.objects.all()
 	context={'products':product}
 	return render (request,'account/products.html',context)
 
-@allowed_user(allowed_roles=['admin'])
-@admin_only
+
 def create_product(request):
 	form=ProductForm
 	if request.method == 'POST':
@@ -106,8 +108,7 @@ def create_product(request):
 	context={'forms':form,}
 	return render (request,'account/product_form.html',context)
 
-@allowed_user(allowed_roles=['admin'])
-@admin_only
+
 def delete_product(request,pk):
 	product=Product.objects.get(id=pk)
 	if request.method == 'POST':
@@ -115,8 +116,7 @@ def delete_product(request,pk):
 		return redirect ('products')
 	return render (request,'account/delete_item.html',{'item':product})
 
-@allowed_user(allowed_roles=['admin'])
-@admin_only
+
 def customer(request,pk):
  search=request.GET.get('search_bar') if request.GET.get('search_bar')!= None else ''	
  customer=Customer.objects.get(id=pk)	
@@ -129,8 +129,7 @@ def customer(request,pk):
  context={'customer':customer,'orders':order,'total_orders':total_orders,'orders2':order2}
  return render (request,'account/customer.html',context)
 
-@allowed_user(allowed_roles=['admin'])
-@admin_only
+
 def create_customer(request):
 	form=CustomerForm()
 	if request.method == 'POST':
@@ -141,8 +140,7 @@ def create_customer(request):
 	context={'forms':form,}
 	return render (request,'account/customer_form.html',context)
 
-@allowed_user(allowed_roles=['admin'])
-@admin_only
+
 def update_customer(request,pk):
 	customer=Customer.objects.get(id=pk)
 	form=CustomerForm(instance=customer)
@@ -154,8 +152,7 @@ def update_customer(request,pk):
 	context={'forms':form,}
 	return render (request,'account/customer_form.html',context)
 
-@allowed_user(allowed_roles=['admin'])
-@admin_only
+
 def delete_customer(request,pk):
 	customer=Customer.objects.get(id=pk)
 	if request.method == 'POST':
@@ -163,8 +160,7 @@ def delete_customer(request,pk):
 		return redirect ('dashboard')
 	return render (request,'account/delete_item.html',{'item':customer})
 
-@allowed_user(allowed_roles=['admin'])
-@admin_only
+
 def create_order(request):
 	form=OrderForm()
 	if request.method == 'POST':
@@ -175,8 +171,7 @@ def create_order(request):
 	context={'forms':form}
 	return render (request,'account/order_form.html',context)
 
-@allowed_user(allowed_roles=['admin'])
-@admin_only
+
 def update_order(request,pk):
 	order=Order.objects.get(id=pk)
 	form=OrderForm(instance=order)
@@ -188,8 +183,7 @@ def update_order(request,pk):
 	context={'order':order,'forms':form}
 	return render (request,'account/order_form.html',context)	
 
-@allowed_user(allowed_roles=['admin'])
-@admin_only
+
 def delete_order(request,pk):
 	order=Order.objects.get(id=pk)
 	if request.method == 'POST':
