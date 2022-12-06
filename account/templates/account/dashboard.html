@@ -19,7 +19,13 @@
 				</tr>
 				{% for customer in customers %}
 					<tr>
-						<td><a href="{% url 'customer' customer.id %}" class="btn btn-sm btn-info">View</a></td>
+						
+						<td>
+							{% if request.user.username == customer.name %}
+							<a href="{% url 'customer' customer.id %}" class="btn btn-sm btn-info">View</a>
+							{%endif%}
+						</td>
+						
 						<td>{{customer.name}}</td>
 						<td>{{customer.phone}}</td>
 					</tr>
